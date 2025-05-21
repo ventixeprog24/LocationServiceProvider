@@ -1,0 +1,79 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "LocationServiceProvider";
+
+package location;
+
+service LocationServiceContract {
+	rpc CreateLocation (LocationCreateRequest) returns (LocationReply); 
+	rpc GetLocationById (LocationByIdRequest) returns (LocationByIdReply);
+	rpc GetAllLocations (Empty) returns (LocationListReply);
+	rpc UpdateLocation (LocationUpdateRequest) returns (LocationReply);
+	rpc DeleteLocation (LocationByIdRequest) returns (LocationReply);
+}
+
+message Location { 
+	string id = 1;
+	string name = 2;
+	string street_name = 3;
+	string postal_code = 4;
+	string city = 5;
+	repeated LocationSeat seats = 6;
+}
+
+message LocationSeat { 
+	string id = 1;
+	string seat_number = 2;
+	string row = 3;
+	string gate = 4;
+}
+
+message LocationCreateRequest { 
+	string name = 1;
+	string street_name = 2;
+	string postal_code = 3;
+	string city = 4;
+	int32 seat_count = 5;
+	int32 row_count = 6;
+	int32 gate_count = 7;
+}
+
+message LocationSeatCreate { 
+	string seat_number = 1;
+	string row = 2;
+	string gate = 3;
+}
+
+message LocationUpdateRequest { 
+	string id = 1;
+	string name = 2;
+	string street_name = 3;
+	string postal_code = 4;
+	string city = 5;
+	int32 seat_count = 6;
+	int32 row_count = 7;
+	int32 gate_count = 8;
+}
+
+message LocationByIdRequest {
+	string id = 1;
+}
+
+message Empty {}
+
+message LocationReply {
+	bool succeeded = 1;
+	string error_message = 2;
+}
+
+message LocationByIdReply {
+	bool succeeded = 1;
+	Location location = 2;
+	string error_message = 3;
+}
+
+message LocationListReply {
+	bool succeeded = 1;
+	repeated Location locations = 2;
+	string error_message = 3;
+}
