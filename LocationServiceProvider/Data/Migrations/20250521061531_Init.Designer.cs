@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace LocationServiceProvider.Migrations
+namespace LocationServiceProvider.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
     [Migration("20250521061531_Init")]

@@ -6,11 +6,7 @@ namespace LocationServiceProvider.Factories
     {
         public static LocationEntity? ToEntity(LocationCreateRequest request, List<LocationSeatCreate> seats)
         {
-            if (request == null)
-                return null;
-
-            if (seats  == null)
-                seats = [];
+            seats ??= [];
 
             return new LocationEntity
             {
@@ -29,9 +25,6 @@ namespace LocationServiceProvider.Factories
 
         public static bool UpdateEntity(LocationEntity entity, LocationUpdateRequest request, List<LocationSeatCreate> seats)
         {
-            if (request == null)
-                return false;
-
             if (entity.Name != request.Name)
                 entity.Name = request.Name;
 
