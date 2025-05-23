@@ -12,7 +12,8 @@ builder.Services.AddMemoryCache();
 
 builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("LocationDbConnection")));
 
-builder.Services.AddTransient<IRequiredFieldsValidator, RequiredFieldsValidator>();
+builder.Services.AddTransient<IFieldValidator, RequiredFieldsValidator>();
+builder.Services.AddTransient<ISeatValidator, LocationSeatValidator>();
 builder.Services.AddTransient<ISeatGenerator, SeatGenerator>();
 builder.Services.AddSingleton<ICacheHandler, CacheHandler>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();

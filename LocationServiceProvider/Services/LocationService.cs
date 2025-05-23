@@ -6,10 +6,11 @@ using System.Diagnostics;
 
 namespace LocationServiceProvider.Services
 {
-    public class LocationService(ILocationRepository locationRepository, IRequiredFieldsValidator requestValidator, ICacheHandler cacheHandler, ISeatGenerator seatGenerator) : LocationServiceContract.LocationServiceContractBase
+    public class LocationService(ILocationRepository locationRepository, IFieldValidator fieldsValidator, ISeatValidator seatsValidator, ICacheHandler cacheHandler, ISeatGenerator seatGenerator) : LocationServiceContract.LocationServiceContractBase
     {
         private readonly ILocationRepository _locationRepository = locationRepository;
-        private readonly IRequiredFieldsValidator _requestValidator = requestValidator;
+        private readonly IFieldValidator _fieldsValidator = fieldsValidator;
+        private readonly ISeatValidator _seatsValidator = seatsValidator;
         private readonly ICacheHandler _cacheHandler = cacheHandler;
         private readonly ISeatGenerator _seatGenerator = seatGenerator;
 
@@ -17,17 +18,22 @@ namespace LocationServiceProvider.Services
 
         public override async Task<LocationReply> CreateLocation(LocationCreateRequest request, ServerCallContext context)
         {
-            var validation = _requestValidator.ValidateRequiredFields(request);
-            if (!validation.IsValid)
-                return new LocationReply { Succeeded = false, ErrorMessage = validation.ErrorMessage };
+            var fieldValidation = _fieldsValidator.Validate(request);
+            if (!fieldValidation.IsValid)
+                return new LocationReply { Succeeded = false, ErrorMessage = fieldValidation.ErrorMessage };
+
+            var seatsValidation = _seatsValidator.Validate(request.SeatCount, request.RowCount, request.GateCount);
+            if (!seatsValidation.IsValid)
+                return new LocationReply { Succeeded = false, ErrorMessage = seatsValidation.ErrorMessage };
 
             try
             {
                 if (await _locationRepository.ExistsAsync(x => x.Name == request!.Name))
                     return new LocationReply { Succeeded = false, ErrorMessage = "Location name already exists" };
 
-                var seats = new List<LocationSeatCreate>();
-                seats = _seatGenerator.GenerateSeats(request.SeatCount, request.RowCount, request.GateCount);
+                var seats = request.SeatCount > 0
+                    ? _seatGenerator.GenerateSeats(request.SeatCount, request.RowCount, request.GateCount)
+                    : new List<LocationSeatCreate>();
 
                 var entity = LocationFactory.ToEntity(request!, seats);
                 if (entity == null)
@@ -48,9 +54,10 @@ namespace LocationServiceProvider.Services
             }
         }
 
-        public async override Task<LocationByIdReply> GetLocationById(LocationByIdRequest request, ServerCallContext context)
+        public override async Task<LocationByIdReply> GetLocationById(LocationByIdRequest request, ServerCallContext context)
         {
-            if (string.IsNullOrWhiteSpace(request.Id))
+            var requestId = _fieldsValidator.Validate(request.Id);
+            if (!requestId.IsValid)
                 return new LocationByIdReply { Succeeded = false, ErrorMessage = "ID is required." };
 
             try
@@ -90,11 +97,15 @@ namespace LocationServiceProvider.Services
             }
         }
 
-        public async override Task<LocationReply> UpdateLocation(LocationUpdateRequest request, ServerCallContext context)
+        public override async Task<LocationReply> UpdateLocation(LocationUpdateRequest request, ServerCallContext context)
         {
-            var validation = _requestValidator.ValidateRequiredFields(request);
-            if (!validation.IsValid)
-                return new LocationReply { Succeeded = false, ErrorMessage = validation.ErrorMessage };
+            var fieldValidation = _fieldsValidator.Validate(request);
+            if (!fieldValidation.IsValid)
+                return new LocationReply { Succeeded = false, ErrorMessage = fieldValidation.ErrorMessage };
+
+            var seatsValidation = _seatsValidator.Validate(request.SeatCount, request.RowCount, request.GateCount);
+            if (!seatsValidation.IsValid)
+                return new LocationReply { Succeeded = false, ErrorMessage = seatsValidation.ErrorMessage };
 
             try
             {
@@ -106,12 +117,11 @@ namespace LocationServiceProvider.Services
                 if (entity == null)
                     return new LocationReply { Succeeded = false, ErrorMessage = "Location not found" };
 
-                var seats = new List<LocationSeatCreate>();
-                seats = _seatGenerator.GenerateSeats(request.SeatCount, request.RowCount, request.GateCount);
+                var seats = request.SeatCount > 0
+                    ? _seatGenerator.GenerateSeats(request.SeatCount, request.RowCount, request.GateCount)
+                    : new List<LocationSeatCreate>();
 
-                var updatedEntity = LocationFactory.UpdateEntity(entity, request!, seats);
-                if (!updatedEntity)
-                    return new LocationReply { Succeeded = false, ErrorMessage = "Failed to update location" };
+                LocationFactory.UpdateEntity(entity, request!, seats);
 
                 var updated = await _locationRepository.UpdateAsync(entity);
                 if (!updated)
@@ -128,9 +138,10 @@ namespace LocationServiceProvider.Services
             }
         }
 
-        public async override Task<LocationReply> DeleteLocation(LocationByIdRequest request, ServerCallContext context)
+        public override async Task<LocationReply> DeleteLocation(LocationByIdRequest request, ServerCallContext context)
         {
-            if (string.IsNullOrWhiteSpace(request.Id))
+            var requestId = _fieldsValidator.Validate(request.Id);
+            if (!requestId.IsValid)
                 return new LocationReply { Succeeded = false, ErrorMessage = "ID is required." };
 
             try

@@ -6,8 +6,6 @@ namespace LocationServiceProvider.Factories
     {
         public static LocationEntity? ToEntity(LocationCreateRequest request, List<LocationSeatCreate> seats)
         {
-            seats ??= [];
-
             return new LocationEntity
             {
                 Name = request.Name,
@@ -23,7 +21,7 @@ namespace LocationServiceProvider.Factories
             };
         }
 
-        public static bool UpdateEntity(LocationEntity entity, LocationUpdateRequest request, List<LocationSeatCreate> seats)
+        public static void UpdateEntity(LocationEntity entity, LocationUpdateRequest request, List<LocationSeatCreate> seats)
         {
             if (entity.Name != request.Name)
                 entity.Name = request.Name;
@@ -37,7 +35,7 @@ namespace LocationServiceProvider.Factories
             if (entity.City != request.City)
                 entity.City = request.City;
 
-            if (request.SeatCount > 0 && request.RowCount > 0)
+            if (request.SeatCount > 0 && request.RowCount > 0 && request.GateCount > 0)
             {
                 entity.Seats.Clear();
                 foreach (var seat in seats)
@@ -50,8 +48,6 @@ namespace LocationServiceProvider.Factories
                     });
                 }
             }
-
-            return true;
         }
 
         public static Location ToGrpcModel(LocationEntity entity)

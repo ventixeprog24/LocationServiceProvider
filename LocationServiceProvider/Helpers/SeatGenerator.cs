@@ -6,21 +6,11 @@ namespace LocationServiceProvider.Helpers
     {
         public List<LocationSeatCreate> GenerateSeats(int seatCount, int rowCount, int gateCount)
         {
-            if (!HasValidFields(seatCount, rowCount, gateCount))
-                return [];
-
             int seatPerRow = seatCount / rowCount;
             int extraSeats = seatCount % rowCount; // Tagit hjälp av AI för hanteringen av extraSeats
             int rowsPerGate = CalculateRowsPerGate(rowCount, gateCount);
 
             return CreateSeatsWithGates(rowCount, seatPerRow, extraSeats, rowsPerGate);
-        }
-
-        public bool HasValidFields(int seatCount, int rowCount, int gateCount)
-        {
-            if (seatCount <= 0 || rowCount <= 0 || gateCount <= 0)
-                return false;
-            return true;
         }
 
         public int CalculateRowsPerGate(int rowCount, int gateCount)
