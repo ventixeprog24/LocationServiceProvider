@@ -29,7 +29,7 @@ namespace LocationServiceProvider.Services
             try
             {
                 if (await _locationRepository.ExistsAsync(x => x.Name == request!.Name))
-                    return new LocationReply { Succeeded = false, ErrorMessage = "Location name already exists" };
+                    return new LocationReply { Succeeded = false, ErrorMessage = "Location name already exists." };
 
                 var seats = request.SeatCount > 0
                     ? _seatGenerator.GenerateSeats(request.SeatCount, request.RowCount, request.GateCount)
@@ -37,11 +37,11 @@ namespace LocationServiceProvider.Services
 
                 var entity = LocationFactory.ToEntity(request!, seats);
                 if (entity == null)
-                    return new LocationReply { Succeeded = false, ErrorMessage = "Failed to create location" };
+                    return new LocationReply { Succeeded = false, ErrorMessage = "Failed to create location." };
 
                 var created = await _locationRepository.CreateAsync(entity);
                 if (!created)
-                    return new LocationReply { Succeeded = false, ErrorMessage = "Failed to create location" };
+                    return new LocationReply { Succeeded = false, ErrorMessage = "The location could not be saved." };
 
                 await RefreshCacheAsync();
 
@@ -50,7 +50,7 @@ namespace LocationServiceProvider.Services
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                return new LocationReply { Succeeded = false, ErrorMessage = "Unable to create location" };
+                return new LocationReply { Succeeded = false, ErrorMessage = "An error occured while creating the location." };
             }
         }
 
@@ -74,12 +74,12 @@ namespace LocationServiceProvider.Services
                 if (model != null)
                     return new LocationByIdReply { Succeeded = true, Location = model };
 
-                return new LocationByIdReply { Succeeded = false, ErrorMessage = "Location not found." };
+                return new LocationByIdReply { Succeeded = false, ErrorMessage = "The location could not be found." };
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                return new LocationByIdReply { Succeeded = false, ErrorMessage = "Unable to get location" };
+                return new LocationByIdReply { Succeeded = false, ErrorMessage = "An error occured while retriving the location." };
             }
         }
 
@@ -93,7 +93,7 @@ namespace LocationServiceProvider.Services
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                return new LocationListReply { Succeeded = false, ErrorMessage = "Unable to get locations" };
+                return new LocationListReply { Succeeded = false, ErrorMessage = "An error occured while loading the locations." };
             }
         }
 
@@ -111,11 +111,11 @@ namespace LocationServiceProvider.Services
             {
                 var locationNameExists = await _locationRepository.ExistsAsync(x => x.Name == request!.Name && x.Id != request.Id);
                 if (locationNameExists)
-                    return new LocationReply { Succeeded = false, ErrorMessage = "Location name already exists" };
+                    return new LocationReply { Succeeded = false, ErrorMessage = "Location name already exists." };
 
                 var entity = await _locationRepository.GetAsync(x => x.Id == request!.Id, i => i.Seats);
                 if (entity == null)
-                    return new LocationReply { Succeeded = false, ErrorMessage = "Location not found" };
+                    return new LocationReply { Succeeded = false, ErrorMessage = "The location could not be found." };
 
                 var seats = request.SeatCount > 0
                     ? _seatGenerator.GenerateSeats(request.SeatCount, request.RowCount, request.GateCount)
@@ -125,7 +125,7 @@ namespace LocationServiceProvider.Services
 
                 var updated = await _locationRepository.UpdateAsync(entity);
                 if (!updated)
-                    return new LocationReply { Succeeded = false, ErrorMessage = "Failed to update location" };
+                    return new LocationReply { Succeeded = false, ErrorMessage = "The location could not be updated." };
 
                 await RefreshCacheAsync();
 
@@ -134,7 +134,7 @@ namespace LocationServiceProvider.Services
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                return new LocationReply { Succeeded = false, ErrorMessage = "Unable to update location" };
+                return new LocationReply { Succeeded = false, ErrorMessage = "An error occured while trying to updating the location." };
             }
         }
 
@@ -148,11 +148,11 @@ namespace LocationServiceProvider.Services
             {
                 var entity = await _locationRepository.ExistsAsync(x => x.Id == request.Id);
                 if (!entity)
-                    return new LocationReply { Succeeded = false, ErrorMessage = "No location found with given id" };
+                    return new LocationReply { Succeeded = false, ErrorMessage = "No location found with given ID." };
 
                 var deleted = await _locationRepository.DeleteAsync(x => x.Id == request.Id);
                 if (!deleted)
-                    return new LocationReply { Succeeded = false, ErrorMessage = "Location deletion failed" };
+                    return new LocationReply { Succeeded = false, ErrorMessage = "The location could not be deleted." };
 
                 await RefreshCacheAsync();
 
@@ -161,7 +161,7 @@ namespace LocationServiceProvider.Services
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                return new LocationReply { Succeeded = false, ErrorMessage = "Unable to delete location" };
+                return new LocationReply { Succeeded = false, ErrorMessage = "An error occured while trying to delete the location." };
             }
         }
 
