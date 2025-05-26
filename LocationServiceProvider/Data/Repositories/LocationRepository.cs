@@ -22,9 +22,6 @@ namespace LocationServiceProvider.Data.Repositories
 
         public async Task<bool> CreateAsync(LocationEntity entity)
         {
-            if (entity == null)
-                return false;
-
             try
             {
                 _context.Locations.Add(entity);
@@ -40,9 +37,6 @@ namespace LocationServiceProvider.Data.Repositories
 
         public async Task<bool> ExistsAsync(Expression<Func<LocationEntity, bool>> expression)
         {
-            if (expression == null)
-                return false;
-
             try
             {
                 var exists = await _context.Locations.AnyAsync(expression);
@@ -55,15 +49,13 @@ namespace LocationServiceProvider.Data.Repositories
             return false;
         }
 
-        public async Task<IEnumerable<LocationEntity>> GetAllAsync(
-            Expression<Func<LocationEntity, object>>? sortBy = null,
-            params Expression<Func<LocationEntity, object>>[] includes)
+        public async Task<IEnumerable<LocationEntity>> GetAllAsync(Expression<Func<LocationEntity, object>>? sortBy = null, params Expression<Func<LocationEntity, object>>[] includes)
         {
             try
             {
                 IQueryable<LocationEntity> query = _context.Locations;
 
-                if (includes != null && includes.Length != 0)
+                if (includes.Length != 0)
                     foreach (var include in includes)
                         query = query.Include(include);
 
@@ -79,20 +71,18 @@ namespace LocationServiceProvider.Data.Repositories
             return [];
         }
 
-        public async Task<LocationEntity?> GetAsync(
-            Expression<Func<LocationEntity, bool>> findBy,
-            params Expression<Func<LocationEntity, object>>[] includes)
+        public async Task<LocationEntity?> GetAsync(Expression<Func<LocationEntity, bool>> findBy, params Expression<Func<LocationEntity, object>>[] includes)
         {
             try
             {
                 IQueryable<LocationEntity> query = _context.Locations;
 
-                if (includes != null && includes.Length != 0)
+                if (includes.Length != 0)
                     foreach (var include in includes)
                         query = query.Include(include);
 
                 var entity = await query.FirstOrDefaultAsync(findBy);
-                return entity ?? null;
+                return entity;
             }
             catch (Exception ex)
             {
@@ -103,9 +93,6 @@ namespace LocationServiceProvider.Data.Repositories
 
         public async Task<bool> UpdateAsync(LocationEntity entity)
         {
-            if (entity == null)
-                return false;
-
             try
             {
                 _context.Locations.Update(entity);
@@ -114,16 +101,13 @@ namespace LocationServiceProvider.Data.Repositories
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Debug.WriteLine($"ERROR: {ex.Message}");
             }
             return false;
         }
 
         public async Task<bool> DeleteAsync(Expression<Func<LocationEntity, bool>> expression)
         {
-            if (expression == null)
-                return false;
-
             try
             {
                 var entity = await _context.Locations.FirstOrDefaultAsync(expression);
