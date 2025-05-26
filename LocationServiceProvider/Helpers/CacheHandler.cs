@@ -6,7 +6,6 @@ namespace LocationServiceProvider.Helpers
     public class CacheHandler(IMemoryCache cache) : ICacheHandler
     {
         private readonly IMemoryCache _cache = cache;
-
         public IEnumerable<Location>? GetFromCache(string cacheKey)
         {
             if (_cache.TryGetValue(cacheKey, out IEnumerable<Location>? cachedData))

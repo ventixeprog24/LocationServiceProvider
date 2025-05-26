@@ -15,12 +15,14 @@ builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer(builder.Configura
 builder.Services.AddTransient<IFieldValidator, RequiredFieldsValidator>();
 builder.Services.AddTransient<ISeatValidator, LocationSeatValidator>();
 builder.Services.AddTransient<ISeatGenerator, SeatGenerator>();
+builder.Services.AddTransient<IValidationManager, ValidationManager>();
 builder.Services.AddSingleton<ICacheHandler, CacheHandler>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<ILocationService, LocationService>();
 
 var app = builder.Build();
 
-app.MapGrpcService<LocationService>();
+app.MapGrpcService<LocationGrpcService>();
 app.MapGet("/", () =>
     "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 

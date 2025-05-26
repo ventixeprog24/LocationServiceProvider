@@ -27,5 +27,13 @@ namespace LocationServiceProvider.Helpers
             }
             return ValidationResult.Success();
         }
+
+        public ValidationResult Validate(string value, string fieldName)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return ValidationResult.Failed($"{fieldName} is required.");
+
+            return ValidationResult.Success();
+        }
     }
 }

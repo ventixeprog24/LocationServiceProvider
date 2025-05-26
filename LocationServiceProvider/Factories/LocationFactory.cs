@@ -1,4 +1,5 @@
-﻿using LocationServiceProvider.Data.Entities;
+﻿using Azure.Core;
+using LocationServiceProvider.Data.Entities;
 
 namespace LocationServiceProvider.Factories
 {
