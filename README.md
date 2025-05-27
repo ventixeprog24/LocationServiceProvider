@@ -57,7 +57,7 @@ var deleteReply = await client.DeleteLocationAsync(new LocationByIdRequest
 });
 ```
 ## Response Overview
-All methods in `LocationService` return a response containing:
+All methods in `LocationServiceContract` return a response containing:
 - `Succeeded*`: a **boolean** value indicating whether the operation was successful
 - `ErrorMessage`: a **string** containing an error message (only set if the operation fails)
 
@@ -83,4 +83,62 @@ The `Location` object includes the following fields:
         }
     ]
 }
+```
+
+## Sequence Diagram 
+
+### Create Location Process
+
+```mermaid
+sequenceDiagram
+actor       Client 
+participant LocationGrpcService
+participant LocationService
+participant ValidationManager
+participant SeatGenerator
+participant LocationFactory
+participant LocationRepository
+participant LocationDB
+  
+Client ->> LocationGrpcService: CreateLocation (request)
+LocationGrpcService ->> LocationService: CreateLocationAsync (request)
+
+LocationService ->> ValidationManager: ValidateCreateRequest (request)
+ValidationManager -->> LocationService: ValidationResult ( IsValid? / Error )
+
+alt Validation failed
+    LocationService -->> LocationGrpcService: LocationReply (Succeeded: false, Error)
+    LocationGrpcService -->> Client: LocationReply (Succeeded: false, Error)
+end
+
+LocationService ->> LocationRepository: ExistsAsync (request.Name)
+LocationRepository ->> LocationDB: Check existing name
+LocationDB -->> LocationRepository: Result
+LocationRepository -->> LocationService: bool (exists?)
+
+alt Location name exists
+    LocationService -->> LocationGrpcService: LocationReply (Succeeded: false, Name exists)
+    LocationGrpcService -->> Client: LocationReply (Succeeded: false, Name exists)
+end
+
+LocationService ->> SeatGenerator: GenerateSeats (seatCount, rowCount, gateCount)
+SeatGenerator -->> LocationService: Seats: List<LocationSeatCreate>
+
+LocationService ->> LocationFactory: ToEntity (request, seats)
+LocationFactory -->> LocationService: LocationEntity
+
+LocationService ->> LocationRepository: CreateAsync (LocationEntity)
+LocationRepository ->> LocationDB: Create location
+LocationDB -->> LocationRepository: Result
+LocationRepository -->> LocationService: bool (created?)
+
+alt Failed to save to database
+    LocationService -->> LocationGrpcService: LocationReply (Succeeded: false, Save failed)
+    LocationGrpcService -->> Client: LocationReply (Succeeded: false, Save failed)
+end
+
+LocationService ->> LocationService: RefreshCacheAsync()
+
+LocationService -->> LocationGrpcService: LocationReply (Succeeded: true)
+LocationGrpcService -->> Client: LocationReply (Succeeded: true)
 ```
